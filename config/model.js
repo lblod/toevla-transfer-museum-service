@@ -6,6 +6,7 @@
 
 export default {
   "https://data.vlaanderen.be/ns/adres#AdresseerbaarObject": [
+    "mu:uuid",
     // properties
     "rdfs:label",
     "toevla:comment",
@@ -61,6 +62,7 @@ export default {
   ],
   // "skos:Concept": [], // concepts are public
   "toevla:Restaurant": [
+    "mu:uuid",
     // properties
     "toevla:heightUnderTarraceTableForWheelchairInConsumptionSpace",
     "toevla:comment",
@@ -88,6 +90,7 @@ export default {
     // no relationships
   ],
   "toevla:Shop": [
+    "mu:uuid",
     // properties
     "toevla:accessControlWidth",
     "toevla:mostNarrowDoorwidth",
@@ -101,6 +104,7 @@ export default {
     // no relationships
   ],
   "nfo:FileDataObject": [
+    "mu:uuid",
     // properties
     "dbpedia:fileExtension",
     "nfo:fileSize",
@@ -116,24 +120,29 @@ export default {
     // "toevla:belongsToExperienceTreeNodeScore" // not used yet
   ],
   "toevla:RouteDescription": [
+    "mu:uuid",
     // properties
     "toevla:hasDetailedDescription",
     "toevla:hasFlemishSignLanguage",
     "toevla:hasScreenreader"
   ],
   "toevla:TrainStop": [
+    "mu:uuid",
     "toevla:distanceFromLocation",
     "toevla:stopName"
   ],
   "toevla:TramStop": [
+    "mu:uuid",
     "toevla:distanceFromLocation",
     "toevla:stopName"
   ],
   "toevla:BusStop": [
+    "mu:uuid",
     "toevla:distanceFromLocation",
     "toevla:stopName"
   ],
   "https://linkedgeodata.org/ontology/Toilets": [
+    "mu:uuid",
     // properties
     "toevla:amountOfSupportBraces",
     "toevla:turningRadius",
@@ -163,11 +172,13 @@ export default {
     "toevla:sizeOfElevator"
   ],
   "toevla:Area": [
+    "mu:uuid",
     // properties
     "toevla:widthInCm",
     "toevla:heightInCm",
   ],
   "schema:Parking": [
+    "mu:uuid",
     // properties
     "toevla:parkingSpaceWidth",
     "toevla:parkingSpaceLength",
@@ -186,6 +197,7 @@ export default {
     "toevla:pathToEntrance"
   ],
   "toevla:Path": [
+    "mu:uuid",
     // properties
     "toevla:amountOfSlopes",
     "toevla:amountOfStairs",
@@ -197,6 +209,7 @@ export default {
     // no relationships
   ],
   "toevla:Entrance": [
+    "mu:uuid",
     // properties
     "toevla:turningRadiusAtDoor",
     "toevla:hasEntranceCheck",
@@ -217,6 +230,7 @@ export default {
     "toevla:forceForOpeningDoorCategory"
   ],
   "toevla:Experience": [
+    "mu:uuid",
     // properties
     "toevla:hasPlacesOfSilence",
     "toevla:hasListeningElements",
@@ -252,6 +266,7 @@ export default {
     { uri: "toevla:scoreSubject", inverse: true }
   ],
   "toevla:Auditorium": [
+    "mu:uuid",
     // noproperties
     // relationships
     "toevla:availabilityOfTailorMadeTours",
@@ -265,6 +280,7 @@ export default {
     "toevla:supportForVisualHandicap",
   ],
   "toevla:Route": [
+    "mu:uuid",
     // properties
     "toevla:hasMultipleRestingAndSittingOpportunities",
     "toevla:hasAlternativePathForHardToAccessSpaces",
@@ -290,6 +306,7 @@ export default {
     "toevla:sizeOfElevator",
   ],
   "toevla:TreeNodeScore": [
+    "mu:uuid",
     // properties
     "toevla:commentLinkUrl",
     "toevla:commentLinkText",
@@ -304,6 +321,7 @@ export default {
 };
 
 const prefixes = {
+  "mu": "http://mu.semte.ch/vocabularies/core/",
   "ext": "http://mu.semte.ch/vocabularies/ext/",
   "skos": "http://www.w3.org/2004/02/skos/core#",
   "dct": "http://purl.org/dc/terms/",
