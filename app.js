@@ -2,7 +2,7 @@
 import { app, errorHandler } from 'mu';
 import QueryHandler from './queries';
 import domain from './domain';
-import InformationCapturing from './information-capturing';
+import { fetchTriples } from './information-capturing';
 
 const VALIDATOR_GRAPH = "http://mu.semte.ch/graphs/public"; // TODO: Convert to actual validator graph
 
@@ -18,16 +18,16 @@ app.post('/museum/:id/to-museum', async function(req, res) {
     if (!museumUri)
       throw `Could not find museum with id ${req.params.id}`;
 
-    const ic = new InformationCapturing(VALIDATOR_GRAPH, museumUri);
-    await ic.fetch();
-    console.log( ic.triples.all() );
+    const sourceTriples = await fetchTriples(VALIDATOR_GRAPH, museumUri);
+    const targetTriples = await fetchTriples(museumUri, museumUri);
+
+    console.log({ sourceTriples, targetTriples });
     // FUTURE: lockMuseum( museumUri, museumUri );
 
-    const triples = ic.triples.all();
     // clearMuseum( museumUri, museumUri );
     // copyMuseum( museumUri, triples );
 
-    res.status(200).send(JSON.stringify(ic.triples.all()));
+    res.status(200).send(JSON.stringify(sourceTriples));
     // res.status(200).send(museumUri);
   } catch (e) {
     res.status(500).send(JSON.stringify(e));

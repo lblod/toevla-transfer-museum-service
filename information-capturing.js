@@ -188,3 +188,16 @@ export default class InformationCapturing {
   }
 }
 
+/**
+ * Fetches the triples starting from URI in GRAPH.
+ *
+ * @param {string} graph
+ * @param {string} uri
+ */
+async function fetchTriples( graph, uri ) {
+  const ic = new InformationCapturing(graph, uri);
+  await ic.fetch();
+  return ic.triples.all();
+}
+
+export { fetchTriples };
