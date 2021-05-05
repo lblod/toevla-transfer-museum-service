@@ -4,13 +4,14 @@ import QueryHandler from './queries';
 import domain from './domain';
 import { fetchTriples } from './information-capturing';
 
-const VALIDATOR_GRAPH = "http://mu.semte.ch/graphs/public"; // TODO: Convert to actual validator graph
+const PUBLIC_GRAPH = "http://mu.semte.ch/graphs/public";
+const VALIDATOR_GRAPH = "http://data.toevla.org/inter";
 
 app.get('/', function(req, res) {
   res.send('Hello mu-javascript-template');
 });
 
-app.post('/museum/:id/to-museum', async function(req, res) {
+app.post('/museum/:id/from-public', async function(req, res) {
   const db = new QueryHandler();
   // TODO: check access rights
   try {
@@ -18,12 +19,15 @@ app.post('/museum/:id/to-museum', async function(req, res) {
     if (!museumUri)
       throw `Could not find museum with id ${req.params.id}`;
 
-    const sourceTriples = await fetchTriples(VALIDATOR_GRAPH, museumUri);
-    const targetTriples = await fetchTriples(museumUri, museumUri);
+    const sourceTriples = await fetchTriples(PUBLIC_GRAPH, museumUri);
+    const targetTriples = await fetchTriples(VALIDATOR_GRAPH, museumUri);
 
     console.log({ sourceTriples, targetTriples });
     // FUTURE: lockMuseum( museumUri, museumUri );
-
+    if (targetTriples.length > 0)
+      await db.removeTriples(VALIDATOR_GRAPH, targetTriples);
+    if (sourceTriples.length > 0)
+      await db.insertTriples(VALIDATOR_GRAPH, sourceTriples);
     // clearMuseum( museumUri, museumUri );
     // copyMuseum( museumUri, triples );
 
@@ -32,7 +36,6 @@ app.post('/museum/:id/to-museum', async function(req, res) {
   } catch (e) {
     res.status(500).send(JSON.stringify(e));
   }
-
 });
 
 app.use(errorHandler);

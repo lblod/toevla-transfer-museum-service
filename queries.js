@@ -1,4 +1,4 @@
-import { querySudo } from '@lblod/mu-auth-sudo';
+import { querySudo, updateSudo } from '@lblod/mu-auth-sudo';
 import { sparqlEscapeString, sparqlEscapeUri } from 'mu';
 import { pre, post } from 'formal-code';
 
@@ -76,7 +76,7 @@ export default class QueryHandler {
           : predicate.uri);
 
     let tripleStatements =
-        predicates
+      predicates
         .map((pred, idx) =>
           isInverse(pred)
             ? `?__sym${idx} ${uriForSparql(pred)} ${sparqlEscapeUri(resource)}.`
@@ -96,5 +96,77 @@ export default class QueryHandler {
     }`);
 
     return response.results.bindings;
+  }
+
+  /**
+    * Removes the specified triples from the specified graph.
+    *
+    * @param {string} graph The affected graph.
+    * @param {[Object]} triples The triples to remove.
+    * @return {Promise}
+    */
+  @pre((graph) => typeof graph === "string")
+  @pre((graph, triples) => triples instanceof Array)
+  @pre((graph, triples) => triples.length > 0)
+  // @post({ doc: "triples removed from graph" })
+  async removeTriples(graph, triples) {
+    // TODO: split triples in queries of N batches.
+    const statements =
+      triples
+        .map((triple) => this.sparqlFormatTriple(triple))
+        .join("  \n");
+
+    await updateSudo(`DELETE DATA {
+      GRAPH ${sparqlEscapeUri(graph)} {
+        ${statements}
+      }
+    }`);
+  }
+
+  @pre((graph) => typeof graph === "string")
+  @pre((graph, triples) => triples instanceof Array)
+  @pre((graph, triples) => triples.length > 0)
+  // @post({ doc: "triples inserted into graph" })
+  async insertTriples(graph, triples) {
+    // TODO: split triples in queries of N batches.
+
+    const statements =
+      triples
+        .map((triple) => this.sparqlFormatTriple(triple))
+        .join("  \n");
+
+    await updateSudo(`INSERT DATA {
+      GRAPH ${sparqlEscapeUri(graph)} {
+        ${statements}
+      }
+    }`);
+  }
+
+  /**
+     * Formats a triple so it can be put into a SPARQL query.
+     *
+     * @param {Object} tirple
+     * @return {string}
+     */
+  @pre((triple) => typeof triple.s === "object" && triple.s.value)
+  @pre((triple) => typeof triple.p === "object" && triple.p.value)
+  @pre((triple) => typeof triple.o === "object")
+  @post((res) => typeof res === "string")
+  sparqlFormatTriple(triple) {
+    const formatEntity = function(entity) {
+      const value = entity.value;
+      if (entity.type === "uri") {
+        return sparqlEscapeUri(value);
+      } else if (entity["xml:lang"]) {
+        return `${sparqlEscapeString(value)}@${entity["xml:lang"]}`;
+      } else if (entity["datatype"]) {
+        return `${sparqlEscapeString(value)}^^${sparqlEscapeUri(entity["datatype"])}`;
+      } else {
+        return sparqlEscapeString(value);
+      }
+    };
+
+    // TODO: verify this is correct for booleans and numbers
+    return `${formatEntity(triple.s)} ${formatEntity(triple.p)} ${formatEntity(triple.o)}.`;
   }
 }
