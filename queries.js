@@ -61,33 +61,37 @@ export default class QueryHandler {
      * 
      * @param {string} graph The graph which contains the resources.
      * @param {string} resource The source resource.
-     * @param {[string]} predicates All predicates to fetch.
+     * @param {[string | Object]} predicates All predicates to fetch.
      */
   async fetchData(graph, resource, predicates) {
     // What we need to do here is create a new resource, and fetch the
     // triples from there.
 
-    let triplesStatement =
-      `${sparqlEscapeUri(resource)}\n  `
-      + (predicates
-        .map((pred, idx) => `${sparqlEscapeUri(pred)} ?__sym${idx}`)
-        .join(";\n  "))
-      + ".";
+    const isInverse = (predicate) => predicate.inverse;
 
-    let optionalTriplesStatement =
-      "\n  "
-      + predicates
+    const uriForSparql = (predicate) =>
+      sparqlEscapeUri(
+        typeof predicate === "string"
+          ? predicate
+          : predicate.uri);
+
+    let tripleStatements =
+        predicates
         .map((pred, idx) =>
-          `{ ${sparqlEscapeUri(resource)} ${sparqlEscapeUri(pred)} ?__sym${idx} }`)
-        .join("\n  UNION \n");
+          isInverse(pred)
+            ? `?__sym${idx} ${uriForSparql(pred)} ${sparqlEscapeUri(resource)}.`
+            : `${sparqlEscapeUri(resource)} ${uriForSparql(pred)} ?__sym${idx}.`);
+
+    let generatePattern = "  " + tripleStatements.join("\n  ");
+    let matchPattern = "  { " + tripleStatements.join("\n  } UNION {\n  ") + "\n }";
 
     const response = await querySudo(`CONSTRUCT {
       ${sparqlEscapeUri(resource)} a ?type.
-      ${triplesStatement}
+      ${generatePattern}
     } WHERE {
        GRAPH ${sparqlEscapeUri(graph)} {
          ${sparqlEscapeUri(resource)} a ?type.
-         ${optionalTriplesStatement}
+         ${matchPattern}
        }
     }`);
 

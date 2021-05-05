@@ -19,22 +19,28 @@ class Domain {
     return res;
   }
 
-  @pre((uri) => typeof uri === 'string')
-  @post((res) => typeof res === 'string')
-  @post((res) => res.indexOf("http") == 0) // not ideal, but it works for all current cases.
+  @pre((uri) => typeof uri === 'string' || (typeof uri === 'object' && typeof uri.uri === 'string'))
+  @post((res) => typeof res === 'string' || typeof res === 'object')
+  @post((res) => (res.uri || res).indexOf("http") == 0) // not ideal, but it works for all current cases.
   expandUri(uri) {
-    if (uri.indexOf("http") === 0) {
+    let isString = typeof uri === "string";
+    let uriText = isString ? uri : uri.uri;
+    if (uriText.indexOf("http") === 0) {
       return uri;
     } else {
       // split on the index, get left and right part.  find the left
       // part in the prefixes and attach the content to the right part.
-      const splitIndex = uri.indexOf(":");
-      const prefix = uri.slice(0, splitIndex);
-      const uriRest = uri.slice(splitIndex + 1);
+      const splitIndex = uriText.indexOf(":");
+      const prefix = uriText.slice(0, splitIndex);
+      const uriRest = uriText.slice(splitIndex + 1);
       const prefixReplacement = prefixes[prefix];
       if (!prefixReplacement)
         throw `Could not find prefix ${prefix} in configuration`;
-      return `${prefixReplacement}${uriRest}`;
+      const newUriText = `${prefixReplacement}${uriRest}`;
+      if (isString)
+        return newUriText;
+      else
+        return Object.assign({}, uri, { uri: newUriText });
     }
   }
 

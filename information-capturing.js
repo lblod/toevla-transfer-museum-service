@@ -173,7 +173,7 @@ export default class InformationCapturing {
     * What are all the predicates for the given resource?
     *
     * @param {string} resource
-    * @return {Promise<[string]>}
+    * @return {Promise<[string | Object]>}
     */
   @pre((uri) => typeof uri === "string")
   @post((res) => res instanceof Array)
