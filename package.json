@@ -1,0 +1,26 @@
+{
+  "name": "toevla-transfer-museum",
+  "version": "0.0.1",
+  "description": "Tooling to transfer musea between graphs",
+  "main": "app.js",
+  "dependencies": {
+    "formal-code": "git+https://github.com/madnificent/formal-code.git"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mu-service"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lblod/toevla-transfer-museum-service.git"
+  },
+  "author": "Aad Versteden <madnificent@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lblod/toevla-transfer-museum-service/issues"
+  },
+  "homepage": "https://github.com/lblod/toevla-transfer-museum-service#readme"
+}
