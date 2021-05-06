@@ -106,8 +106,8 @@ export default class QueryHandler {
     * @return {Promise}
     */
   @pre((graph) => typeof graph === "string")
-  @pre((graph, triples) => triples instanceof Array)
-  @pre((graph, triples) => triples.length > 0)
+  @pre((_g, triples) => triples instanceof Array)
+  @pre((_g, triples) => triples.length > 0)
   // @post({ doc: "triples removed from graph" })
   async removeTriples(graph, triples) {
     // TODO: split triples in queries of N batches.
@@ -124,8 +124,8 @@ export default class QueryHandler {
   }
 
   @pre((graph) => typeof graph === "string")
-  @pre((graph, triples) => triples instanceof Array)
-  @pre((graph, triples) => triples.length > 0)
+  @pre((_g, triples) => triples instanceof Array)
+  @pre((_g, triples) => triples.length > 0)
   // @post({ doc: "triples inserted into graph" })
   async insertTriples(graph, triples) {
     // TODO: split triples in queries of N batches.

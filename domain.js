@@ -21,7 +21,7 @@ class Domain {
 
   @pre((uri) => typeof uri === 'string' || (typeof uri === 'object' && typeof uri.uri === 'string'))
   @post((res) => typeof res === 'string' || typeof res === 'object')
-  @post((res) => (res.uri || res).indexOf("http") == 0) // not ideal, but it works for all current cases.
+  @post((res) => (res.uri || res).indexOf("http") === 0) // not ideal, but it works for all current cases.
   expandUri(uri) {
     let isString = typeof uri === "string";
     let uriText = isString ? uri : uri.uri;
