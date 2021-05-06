@@ -6,6 +6,21 @@ import { fetchTriples } from './information-capturing';
 const PUBLIC_GRAPH = "http://mu.semte.ch/graphs/public";
 const VALIDATOR_GRAPH = "http://data.toevla.org/inter";
 
+/**
+ * Get's a museum's uri given its uuid or throws an error.
+ *
+ * @param {string} uuid The uuid of the museum.
+ * @throws Error when no URI could be found.
+ */
+async function getMuseumUri(uuid) {
+  const db = new QueryHandler();
+  const museumUri = await db.findMuseumUriForId(uuid);
+  if (!museumUri)
+    throw `Could not find museum with id ${uuid}`;
+  else
+    return museumUri;
+}
+
 app.get('/', function(_req, res) {
   res.send('Hello mu-javascript-template');
 });
@@ -14,9 +29,7 @@ app.post('/museum/:id/from-public', async function(req, res) {
   const db = new QueryHandler();
   // TODO: check access rights
   try {
-    const museumUri = await db.findMuseumUriForId(req.params.id);
-    if (!museumUri)
-      throw `Could not find museum with id ${req.params.id}`;
+    const museumUri = await getMuseumUri(req.params.id);
 
     const sourceTriples = await fetchTriples(PUBLIC_GRAPH, museumUri);
     const targetTriples = await fetchTriples(VALIDATOR_GRAPH, museumUri);
@@ -37,13 +50,11 @@ app.post('/museum/:id/from-public', async function(req, res) {
   }
 });
 
-app.delete('/museum/:id/from-validator', async function(req,res) {
+app.delete('/museum/:id/from-validator', async function(req, res) {
   const db = new QueryHandler();
   // TODO: check access rights
   try {
-    const museumUri = await db.findMuseumUriForId(req.params.id);
-    if (!museumUri)
-      throw `Could not find museum with id ${req.params.id}`;
+    const museumUri = await getMuseumUri(req.params.id);
 
     const targetTriples = await fetchTriples(VALIDATOR_GRAPH, museumUri);
 
@@ -56,5 +67,6 @@ app.delete('/museum/:id/from-validator', async function(req,res) {
     res.status(500).send(JSON.stringify(e));
   }
 });
+
 
 app.use(errorHandler);
