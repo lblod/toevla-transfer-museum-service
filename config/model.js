@@ -60,6 +60,12 @@ export default {
     "toevla:discountForTranslator",
     "toevla:wheelchairAvailability",
   ],
+  "toevla:Widget": [
+    "mu:uuid",
+    // no properties
+    // relationships
+    "toevla:rendersPoi" // redundant but may help if we start from widget
+  ],
   // "skos:Concept": [], // concepts are public
   "toevla:Restaurant": [
     "mu:uuid",
