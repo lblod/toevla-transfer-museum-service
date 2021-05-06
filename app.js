@@ -21,10 +21,6 @@ async function getMuseumUri(uuid) {
     return museumUri;
 }
 
-app.get('/', function(_req, res) {
-  res.send('Hello mu-javascript-template');
-});
-
 app.post('/museum/:id/from-public', async function(req, res) {
   const db = new QueryHandler();
   // TODO: check access rights
@@ -34,19 +30,15 @@ app.post('/museum/:id/from-public', async function(req, res) {
     const sourceTriples = await fetchTriples(PUBLIC_GRAPH, museumUri);
     const targetTriples = await fetchTriples(VALIDATOR_GRAPH, museumUri);
 
-    console.log({ sourceTriples, targetTriples });
     // FUTURE: lockMuseum( museumUri, museumUri );
     if (targetTriples.length > 0)
       await db.removeTriples(VALIDATOR_GRAPH, targetTriples);
     if (sourceTriples.length > 0)
       await db.insertTriples(VALIDATOR_GRAPH, sourceTriples);
-    // clearMuseum( museumUri, museumUri );
-    // copyMuseum( museumUri, triples );
 
-    res.status(200).send(JSON.stringify(sourceTriples));
-    // res.status(200).send(museumUri);
+    res.status(200).send(JSON.stringify({status: "done"}));
   } catch (e) {
-    res.status(500).send(JSON.stringify(e));
+    res.status(500).send(JSON.stringify({status: "failure"}));
   }
 });
 
@@ -61,10 +53,9 @@ app.delete('/museum/:id/from-validator', async function(req, res) {
     if (targetTriples.length > 0)
       await db.removeTriples(VALIDATOR_GRAPH, targetTriples);
 
-    res.status(200).send("DONE!");
-    // res.status(200).send(museumUri);
+    res.status(200).send(JSON.stringify({status: "done"}));
   } catch (e) {
-    res.status(500).send(JSON.stringify(e));
+    res.status(500).send(JSON.stringify({status: "failure"}));
   }
 });
 
