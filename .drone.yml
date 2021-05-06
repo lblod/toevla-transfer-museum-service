@@ -1,0 +1,81 @@
+---
+kind: pipeline
+type: docker
+name: push-latest-build-on-commit-to-master
+steps:
+- name: push-latest-build
+  image: plugins/docker
+  settings:
+    repo: lblod/toevla-transfer-museum
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+trigger:
+  branch:
+    - master
+  event:
+    exclude:
+    - pull_request
+---
+kind: pipeline
+type: docker
+name: push-feature-build-for-feature-branch
+steps:
+- name: push-feature-build
+  image: plugins/docker
+  settings:
+    repo: lblod/toevla-transfer-museum
+    tags: feature-${DRONE_BRANCH##feature/}
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+trigger:
+  branch:
+  - feature/*
+  event:
+    exclude:
+    - pull_request
+---
+kind: pipeline
+type: docker
+name: release-on-tag
+steps:
+- name: build-dry-run
+  image: plugins/docker
+  settings:
+    repo: lblod/toevla-transfer-museum
+    dry_run: true
+- name: push-tagged-build
+  image: plugins/docker
+  settings:
+    repo: lblod/toevla-transfer-museum
+    tags: ${DRONE_TAG##v}
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    purge: true
+trigger:
+  event:
+    - tag
+---
+kind: pipeline
+type: docker
+name: verify-pr
+steps:
+- name: build-dry-run
+  image: plugins/docker
+  settings:
+    repo: lblod/toevla-transfer-museum
+    dry_run: true
+    purge: true
+trigger:
+  event:
+    - pull
+---
+kind: signature
+hmac: 515782d350e31d87d2573299618043f0de9f2ff867456dc843bc14872646340d
+
+...
