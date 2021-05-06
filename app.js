@@ -21,27 +21,109 @@ async function getMuseumUri(uuid) {
     return museumUri;
 }
 
-app.post('/museum/:id/from-public', async function(req, res) {
+/**
+ * Replaces the data of a museum which is in targetGraph, with the data
+ * available in sourceGraph.
+ *
+ * @param {string} uri The uri of the museum.
+ * @param {string} sourceGraph Originating graph.
+ * @param {string} targetGraph Manipulated graph.
+ */
+async function sendMuseum(uri, sourceGraph, targetGraph) {
   const db = new QueryHandler();
+
+  // FUTURE: lockMuseum( museumUri, museumUri );
+
+  const sourceTriples = await fetchTriples(sourceGraph, uri);
+  const targetTriples = await fetchTriples(targetGraph, uri);
+
+  if (targetTriples.length > 0)
+    await db.removeTriples(VALIDATOR_GRAPH, targetTriples);
+  if (sourceTriples.length > 0)
+    await db.insertTriples(VALIDATOR_GRAPH, sourceTriples);
+}
+
+/**
+ * Send a museum from the museum graph to the validator
+ *
+ * This is used when a museum has executed changes and wants to send
+ * them to inter.
+ *
+ * - id: the uuid of the museum
+ */
+app.post('/museum/:id/send-to-validator', async function(req, res) {
   // TODO: check access rights
   try {
     const museumUri = await getMuseumUri(req.params.id);
+    sendMuseum(museumUri, museumUri, VALIDATOR_GRAPH);
 
-    const sourceTriples = await fetchTriples(PUBLIC_GRAPH, museumUri);
-    const targetTriples = await fetchTriples(VALIDATOR_GRAPH, museumUri);
-
-    // FUTURE: lockMuseum( museumUri, museumUri );
-    if (targetTriples.length > 0)
-      await db.removeTriples(VALIDATOR_GRAPH, targetTriples);
-    if (sourceTriples.length > 0)
-      await db.insertTriples(VALIDATOR_GRAPH, sourceTriples);
-
-    res.status(200).send(JSON.stringify({status: "done"}));
+    res.status(200).send(JSON.stringify({ status: "done" }));
   } catch (e) {
-    res.status(500).send(JSON.stringify({status: "failure"}));
+    res.status(500).send(JSON.stringify({ status: "failure" }));
   }
 });
 
+/**
+ * Send a museum from the validator to public.
+ *
+ * This is used when a museum has executed changes and wants to send
+ * them to inter.
+ *
+ * - id: the uuid of the museum
+ */
+app.post('/museum/:id/send-to-public', async function(req, res) {
+  // TODO: check access rights
+  try {
+    const museumUri = await getMuseumUri(req.params.id);
+    sendMuseum(museumUri, VALIDATOR_GRAPH, PUBLIC_GRAPH);
+
+    res.status(200).send(JSON.stringify({ status: "done" }));
+  } catch (e) {
+    res.status(500).send(JSON.stringify({ status: "failure" }));
+  }
+});
+
+/**
+ * Send a museum from the validator to the museum graph.
+ *
+ * - id: the uuid of the museum
+ */
+app.post('/museum/:id/send-to-museum', async function(req, res) {
+  // TODO: check access rights
+  try {
+    const museumUri = await getMuseumUri(req.params.id);
+    sendMuseum(museumUri, VALIDATOR_GRAPH, museumUri);
+
+    res.status(200).send(JSON.stringify({ status: "done" }));
+  } catch (e) {
+    res.status(500).send(JSON.stringify({ status: "failure" }));
+  }
+});
+
+/**
+ * Import a museum from the public graph.
+ *
+ * This is mostly handy when pulling back musea from the public graph.
+ *
+ * - id: the uuid of the museum
+ */
+app.post('/museum/:id/from-public', async function(req, res) {
+  // TODO: check access rights
+  try {
+    const museumUri = await getMuseumUri(req.params.id);
+    sendMuseum(museumUri, PUBLIC_GRAPH, VALIDATOR_GRAPH);
+
+    res.status(200).send(JSON.stringify({ status: "done" }));
+  } catch (e) {
+    res.status(500).send(JSON.stringify({ status: "failure" }));
+  }
+});
+
+/**
+ * Removes a museum from the validator graph.
+ *
+ * Used as an administrative task.
+ */
 app.delete('/museum/:id/from-validator', async function(req, res) {
   const db = new QueryHandler();
   // TODO: check access rights
@@ -53,9 +135,31 @@ app.delete('/museum/:id/from-validator', async function(req, res) {
     if (targetTriples.length > 0)
       await db.removeTriples(VALIDATOR_GRAPH, targetTriples);
 
-    res.status(200).send(JSON.stringify({status: "done"}));
+    res.status(200).send(JSON.stringify({ status: "done" }));
   } catch (e) {
-    res.status(500).send(JSON.stringify({status: "failure"}));
+    res.status(500).send(JSON.stringify({ status: "failure" }));
+  }
+});
+
+/**
+ * Removes a museum from the public graph.
+ *
+ * Used as an administrative task.
+ */
+app.delete('/museum/:id/from-validator', async function(req, res) {
+  const db = new QueryHandler();
+  // TODO: check access rights
+  try {
+    const museumUri = await getMuseumUri(req.params.id);
+
+    const targetTriples = await fetchTriples(PUBLIC_GRAPH, museumUri);
+
+    if (targetTriples.length > 0)
+      await db.removeTriples(PUBLIC_GRAPH, targetTriples);
+
+    res.status(200).send(JSON.stringify({ status: "done" }));
+  } catch (e) {
+    res.status(500).send(JSON.stringify({ status: "failure" }));
   }
 });
 
