@@ -38,9 +38,9 @@ async function sendMuseum(uri, sourceGraph, targetGraph) {
   const targetTriples = await fetchTriples(targetGraph, uri);
 
   if (targetTriples.length > 0)
-    await db.removeTriples(VALIDATOR_GRAPH, targetTriples);
+    await db.removeTriples(targetGraph, targetTriples);
   if (sourceTriples.length > 0)
-    await db.insertTriples(VALIDATOR_GRAPH, sourceTriples);
+    await db.insertTriples(targetGraph, sourceTriples);
 }
 
 /**
@@ -146,7 +146,7 @@ app.delete('/museum/:id/from-validator', async function(req, res) {
  *
  * Used as an administrative task.
  */
-app.delete('/museum/:id/from-validator', async function(req, res) {
+app.delete('/museum/:id/from-public', async function(req, res) {
   const db = new QueryHandler();
   // TODO: check access rights
   try {
