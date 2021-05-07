@@ -5,6 +5,7 @@ import { fetchTriples } from './information-capturing';
 
 const PUBLIC_GRAPH = "http://mu.semte.ch/graphs/public";
 const VALIDATOR_GRAPH = "http://data.toevla.org/inter";
+const MUSEUM_BASE_GRAPH = "http://data.toevla.org/musea/";
 
 /**
  * Get's a museum's uri given its uuid or throws an error.
@@ -19,6 +20,16 @@ async function getMuseumUri(uuid) {
     throw `Could not find museum with id ${uuid}`;
   else
     return museumUri;
+}
+
+/**
+ * Returns the graph in which the museum's local content is stored.
+ *
+ * @param {string} uuid Uuid of the museum.
+ * @return {string} Graph in which the museum has its local information.
+ */
+function getMuseumGraph(uuid) {
+  return `${MUSEUM_BASE_GRAPH}${uuid}`;
 }
 
 /**
@@ -55,7 +66,8 @@ app.post('/museum/:id/send-to-validator', async function(req, res) {
   // TODO: check access rights
   try {
     const museumUri = await getMuseumUri(req.params.id);
-    sendMuseum(museumUri, museumUri, VALIDATOR_GRAPH);
+    const museumGraph = getMuseumGraph(req.params.id);
+    sendMuseum(museumUri, museumGraph, VALIDATOR_GRAPH);
 
     res.status(200).send(JSON.stringify({ status: "done" }));
   } catch (e) {
@@ -92,7 +104,8 @@ app.post('/museum/:id/send-to-museum', async function(req, res) {
   // TODO: check access rights
   try {
     const museumUri = await getMuseumUri(req.params.id);
-    sendMuseum(museumUri, VALIDATOR_GRAPH, museumUri);
+    const museumGraph = getMuseumGraph(req.params.id);
+    sendMuseum(museumUri, VALIDATOR_GRAPH, museumGraph);
 
     res.status(200).send(JSON.stringify({ status: "done" }));
   } catch (e) {
