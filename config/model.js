@@ -48,7 +48,7 @@ export default {
     "toevla:summaryIcon",
     "toevla:hasPublicTransportRouteDescription",
     "toevla:hasRestaurant",
-    "toevla:rendersPoi",
+    { uri: "toevla:rendersPoi", inverse: true },
     "toevla:hasShop",
     "toevla:wifiAvailability",
     "toevla:typeOfGlassDoorDecoration",
