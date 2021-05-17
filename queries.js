@@ -160,7 +160,7 @@ export default class QueryHandler {
       } else if (entity["xml:lang"]) {
         return `${sparqlEscapeString(value)}@${entity["xml:lang"]}`;
       } else if (entity["datatype"]) {
-        return `${sparqlEscapeString(value)}^^${sparqlEscapeUri(entity["datatype"])}`;
+        return `${sparqlEscapeString(`${value}`)}^^${sparqlEscapeUri(entity["datatype"])}`;
       } else {
         return sparqlEscapeString(value);
       }
