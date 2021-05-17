@@ -59,6 +59,7 @@ export default {
     "toevla:discountForGuide",
     "toevla:discountForTranslator",
     "toevla:wheelchairAvailability",
+    { uri: "toevla:scoreSubject", inverse: true }
   ],
   "toevla:Widget": [
     "mu:uuid",
