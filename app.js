@@ -67,9 +67,10 @@ app.post('/museum/:id/send-to-validator', async function(req, res) {
   try {
     const museumUri = await getMuseumUri(req.params.id);
     const museumGraph = getMuseumGraph(req.params.id);
-    await sendMuseum(museumUri, museumGraph, VALIDATOR_GRAPH);
 
-    res.status(200).send(JSON.stringify({ status: "done" }));
+    res.status(200).send(JSON.stringify({ status: "requested" })); // send early confirmation for now
+
+    await sendMuseum(museumUri, museumGraph, VALIDATOR_GRAPH);
   } catch (e) {
     res.status(500).send(JSON.stringify({ status: "failure" }));
   }
@@ -87,9 +88,10 @@ app.post('/museum/:id/send-to-public', async function(req, res) {
   // TODO: check access rights
   try {
     const museumUri = await getMuseumUri(req.params.id);
-    await sendMuseum(museumUri, VALIDATOR_GRAPH, PUBLIC_GRAPH);
 
-    res.status(200).send(JSON.stringify({ status: "done" }));
+    res.status(200).send(JSON.stringify({ status: "requested" })); // send early confirmation for now
+
+    await sendMuseum(museumUri, VALIDATOR_GRAPH, PUBLIC_GRAPH);
   } catch (e) {
     res.status(500).send(JSON.stringify({ status: "failure" }));
   }
@@ -105,9 +107,10 @@ app.post('/museum/:id/send-to-museum', async function(req, res) {
   try {
     const museumUri = await getMuseumUri(req.params.id);
     const museumGraph = getMuseumGraph(req.params.id);
-    await sendMuseum(museumUri, VALIDATOR_GRAPH, museumGraph);
 
-    res.status(200).send(JSON.stringify({ status: "done" }));
+    res.status(200).send(JSON.stringify({ status: "requested" })); // send early confirmation for now
+
+    await sendMuseum(museumUri, VALIDATOR_GRAPH, museumGraph);
   } catch (e) {
     res.status(500).send(JSON.stringify({ status: "failure" }));
   }
