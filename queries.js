@@ -119,7 +119,7 @@ export default class QueryHandler {
     for( let chunkidx = 0; chunkidx * size < array.length ; chunkidx++ ) {
       let chunk = [];
       let base = chunkidx * size;
-      for( let i = 0; i < size; i++ ) {
+      for( let i = 0; i < size && i + base < array.length; i++ ) {
         chunk[i] = array[base + i];
       }
       chunks[chunkidx] = chunk;
@@ -141,7 +141,7 @@ export default class QueryHandler {
   async removeTriples(graph, triples) {
     const chunks = this.chunkTriples( triples, MAX_TRIPLES_PER_UPDATE );
 
-    for( const chunk in chunks ) {
+    for( const chunk of chunks ) {
       const statements =
             chunk
             .map((triple) => this.sparqlFormatTriple(triple))
@@ -162,7 +162,7 @@ export default class QueryHandler {
   async insertTriples(graph, triples) {
     const chunks = this.chunkTriples( triples, MAX_TRIPLES_PER_UPDATE );
 
-    for( const chunk in chunks ) {
+    for( const chunk of chunks ) {
       const statements =
             triples
             .map((triple) => this.sparqlFormatTriple(triple))
