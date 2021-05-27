@@ -6,6 +6,12 @@ const PREFIXES = `
   PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
 `;
 
+/**
+ * How much tirples will be sent maximum for insert data or delete data
+ * queries.
+ */
+const MAX_TRIPLES_PER_UPDATE = 200;
+
 export default class QueryHandler {
   /**
     * Finds the Museum URI for a given UUID.
@@ -99,6 +105,29 @@ export default class QueryHandler {
   }
 
   /**
+   * Splits an array into a set of chunks of maximum size SIZE.
+   *
+   * @param {[any]} array The Array to split.
+   * @param {integer} size Max size of a returned array.
+   * @return {[[any]]} Nested array
+   */
+  @pre((array) => typeof array === "object")
+  @pre((_array,size) => typeof size === "number")
+  @post((res) => typeof res === "object" && typeof res[0] === "object")
+  chunkTriples( array, size ) {
+    const chunks = [];
+    for( let chunkidx = 0; chunkidx * size < array.length ; chunkidx++ ) {
+      let chunk = [];
+      let base = chunkidx * size;
+      for( let i = 0; i < size; i++ ) {
+        chunk[i] = array[base + i];
+      }
+      chunks[chunkidx] = chunk;
+    }
+    return chunks;
+  }
+
+  /**
     * Removes the specified triples from the specified graph.
     *
     * @param {string} graph The affected graph.
@@ -110,17 +139,20 @@ export default class QueryHandler {
   @pre((_g, triples) => triples.length > 0)
   // @post({ doc: "triples removed from graph" })
   async removeTriples(graph, triples) {
-    // TODO: split triples in queries of N batches.
-    const statements =
-      triples
-        .map((triple) => this.sparqlFormatTriple(triple))
-        .join("  \n");
+    const chunks = this.chunkTriples( triples, MAX_TRIPLES_PER_UPDATE );
 
-    await updateSudo(`DELETE DATA {
-      GRAPH ${sparqlEscapeUri(graph)} {
-        ${statements}
-      }
-    }`);
+    for( const chunk in chunks ) {
+      const statements =
+            chunk
+            .map((triple) => this.sparqlFormatTriple(triple))
+            .join("  \n");
+
+      await updateSudo(`DELETE DATA {
+        GRAPH ${sparqlEscapeUri(graph)} {
+          ${statements}
+        }
+      }`);
+    }
   }
 
   @pre((graph) => typeof graph === "string")
@@ -128,18 +160,20 @@ export default class QueryHandler {
   @pre((_g, triples) => triples.length > 0)
   // @post({ doc: "triples inserted into graph" })
   async insertTriples(graph, triples) {
-    // TODO: split triples in queries of N batches.
+    const chunks = this.chunkTriples( triples, MAX_TRIPLES_PER_UPDATE );
 
-    const statements =
-      triples
-        .map((triple) => this.sparqlFormatTriple(triple))
-        .join("  \n");
+    for( const chunk in chunks ) {
+      const statements =
+            triples
+            .map((triple) => this.sparqlFormatTriple(triple))
+            .join("  \n");
 
-    await updateSudo(`INSERT DATA {
-      GRAPH ${sparqlEscapeUri(graph)} {
-        ${statements}
-      }
-    }`);
+      await updateSudo(`INSERT DATA {
+        GRAPH ${sparqlEscapeUri(graph)} {
+          ${statements}
+        }
+      }`);
+    }
   }
 
   /**
