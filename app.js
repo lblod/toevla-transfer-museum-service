@@ -1,7 +1,7 @@
 // see https://github.com/mu-semtech/mu-javascript-template for more info
 import { app, errorHandler } from 'mu';
 import QueryHandler from './queries';
-import { fetchTriples } from './information-capturing';
+import { fetchTriples, triplesMinus } from './information-capturing';
 
 const PUBLIC_GRAPH = "http://mu.semte.ch/graphs/public";
 const VALIDATOR_GRAPH = "http://data.toevla.org/inter";
@@ -48,10 +48,13 @@ async function sendMuseum(uri, sourceGraph, targetGraph) {
   const sourceTriples = await fetchTriples(sourceGraph, uri);
   const targetTriples = await fetchTriples(targetGraph, uri);
 
-  if (targetTriples.length > 0)
-    await db.removeTriples(targetGraph, targetTriples);
-  if (sourceTriples.length > 0)
-    await db.insertTriples(targetGraph, sourceTriples);
+  const toRemove = triplesMinus( targetTriples, sourceTriples );
+  const toAdd = triplesMinus( sourceTriples, targetTriples );
+
+  if (toRemove.length > 0)
+    await db.removeTriples(targetGraph, toRemove);
+  if (toAdd.length > 0)
+    await db.insertTriples(targetGraph, toAdd);
 }
 
 /**

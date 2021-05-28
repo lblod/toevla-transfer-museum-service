@@ -164,7 +164,7 @@ export default class QueryHandler {
 
     for( const chunk of chunks ) {
       const statements =
-            triples
+            chunk
             .map((triple) => this.sparqlFormatTriple(triple))
             .join("  \n");
 

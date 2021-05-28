@@ -9,6 +9,15 @@ class TripleStore {
   triples = new Map();
 
   /**
+   * Creates a new TripleStore, optionally setting it up with data.
+   *
+   * @param {[object] | undefined} triples Initial set of triples.
+   */
+  constructor(triples = []) {
+    triples.forEach((triple) => this.add(triple));
+  }
+
+  /**
     * Adds a triple to the store.
     *
     * @param {Object} triple
@@ -194,10 +203,25 @@ export default class InformationCapturing {
  * @param {string} graph
  * @param {string} uri
  */
-async function fetchTriples( graph, uri ) {
+async function fetchTriples(graph, uri) {
   const ic = new InformationCapturing(graph, uri);
   await ic.fetch();
   return ic.triples.all();
 }
 
-export { fetchTriples };
+/**
+ * Yields the triples which are in source but not in target.
+ *
+ * Non-destructive operation.
+ *
+ * @param {[object]} source Array with triples as base knowledge.
+ * @param {[object]} target Array if triples that will be removed from
+ * the result.
+ */
+function triplesMinus(source, target) {
+  const targetStore = new TripleStore(target);
+
+  return source.filter((s) => !targetStore.has(s));
+}
+
+export { fetchTriples, triplesMinus };
