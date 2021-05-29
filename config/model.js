@@ -277,8 +277,15 @@ export default {
   ],
   "toevla:Auditorium": [
     "mu:uuid",
-    // noproperties
-    // relationships
+    // properties
+    "toevla:extraAttentionGivenToAcoustics",
+    "toevla:hasTeleloop",
+    "toevla:hasAccessibleSeating",
+    // no relationships
+  ],
+  "toevla:GuidedTour": [
+    "mu:uuid",
+    // properties
     "toevla:availabilityOfTailorMadeTours",
     "toevla:availabilityOnQuietMoments",
     "toevla:supportForChildren",
@@ -288,6 +295,7 @@ export default {
     "toevla:supportForDeaf",
     "toevla:supportForAuditiveHandicap",
     "toevla:supportForVisualHandicap",
+    // no relationships
   ],
   "toevla:Route": [
     "mu:uuid",
