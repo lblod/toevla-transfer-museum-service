@@ -12,6 +12,7 @@ export default {
     "toevla:comment",
     "toevla:commentOnPublicTransport",
     "toevla:commentOnEntrance",
+    "toevla:commentOnAlternativeEntranceForWheelchair",
     "ext:locationString",
     "toevla:hasCashPayment",
     "toevla:hasPaymentWithMovableElectronicPaymentSystem",
@@ -174,11 +175,11 @@ export default {
     "toevla:hasSimpleAndLogicalRoute",
     "toevla:isWheelchairAccessibleThroughBuilding",
     "toevla:comment",
-    "toevla:hasWashbasin",
     // relationships
     "toevla:sizeOfPlateauElevator",
     "toevla:sizeOfToiletRoom",
     "toevla:canRideUnderWashbasinCategory",
+    "toevla:washbasinAvailability",
     "toevla:sizeOfElevator"
   ],
   "toevla:Area": [
@@ -193,7 +194,6 @@ export default {
     "toevla:parkingSpaceWidth",
     "toevla:parkingSpaceLength",
     "toevla:hasWheelchairFriendlyTerrain",
-    "toevla:onPublicDomain",
     "toevla:numberOfWheelchairFriendlySpots",
     "toevla:detailedRouteDescriptionIsAvailableInFlemishSignLanguage",
     "toevla:detailedRouteDescriptionHasScreenReader",
@@ -203,6 +203,7 @@ export default {
     "toevla:isPartOfLocation",
     "toevla:comment",
     "toevla:maxVehicleHeight",
+    "toevla:descriptionOfParkingOnPublicDomain",
     // relationships
     "toevla:pathToEntrance"
   ],
@@ -229,7 +230,6 @@ export default {
     "toevla:amountOfSlopes",
     "toevla:amountOfStairs",
     "toevla:amountOfThresholds",
-    "toevla:commentOnAlternativeEntranceForWheelchair",
     "toevla:highestThreshold",
     "toevla:hasTeleloopAtCounter",
     "toevla:hasMannedDesk",
