@@ -72,9 +72,9 @@ app.post('/museum/:id/send-to-validator', async function(req, res) {
     await ensureRoleIsMuseum(sessionUri, museumUri);
     const museumGraph = getMuseumGraph(req.params.id);
 
-    res.status(200).send(JSON.stringify({ status: "requested" })); // send early confirmation for now
-
     await sendMuseum(museumUri, museumGraph, VALIDATOR_GRAPH);
+
+    res.status(200).send(JSON.stringify({ status: "transfer succeeded" }));
   } catch (e) {
     if( e instanceof NoMatchingRoleError )
       res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
@@ -97,9 +97,9 @@ app.post('/museum/:id/send-to-public', async function(req, res) {
     await ensureRoleIsValidator(sessionUri);
     const museumUri = await getMuseumUri(req.params.id);
 
-    res.status(200).send(JSON.stringify({ status: "requested" })); // send early confirmation for now
-
     await sendMuseum(museumUri, VALIDATOR_GRAPH, PUBLIC_GRAPH);
+
+    res.status(200).send(JSON.stringify({ status: "transfer succeeded" }));
   } catch (e) {
     if( e instanceof NoMatchingRoleError )
       res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
@@ -120,9 +120,9 @@ app.post('/museum/:id/send-to-museum', async function(req, res) {
     const museumUri = await getMuseumUri(req.params.id);
     const museumGraph = getMuseumGraph(req.params.id);
 
-    res.status(200).send(JSON.stringify({ status: "requested" })); // send early confirmation for now
-
     await sendMuseum(museumUri, VALIDATOR_GRAPH, museumGraph);
+
+    res.status(200).send(JSON.stringify({ status: "transfer succeeded" }));
   } catch (e) {
     if( e instanceof NoMatchingRoleError )
       res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
@@ -145,7 +145,7 @@ app.post('/museum/:id/from-public', async function(req, res) {
     const museumUri = await getMuseumUri(req.params.id);
     await sendMuseum(museumUri, PUBLIC_GRAPH, VALIDATOR_GRAPH);
 
-    res.status(200).send(JSON.stringify({ status: "done" }));
+    res.status(200).send(JSON.stringify({ status: "transfer succeeded" }));
   } catch (e) {
     if( e instanceof NoMatchingRoleError )
       res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
@@ -171,7 +171,7 @@ app.delete('/museum/:id/from-validator', async function(req, res) {
     if (targetTriples.length > 0)
       await db.removeTriples(VALIDATOR_GRAPH, targetTriples);
 
-    res.status(200).send(JSON.stringify({ status: "done" }));
+    res.status(200).send(JSON.stringify({ status: "remove succeeded" }));
   } catch (e) {
     if( e instanceof NoMatchingRoleError )
       res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
@@ -197,7 +197,7 @@ app.delete('/museum/:id/from-public', async function(req, res) {
     if (targetTriples.length > 0)
       await db.removeTriples(PUBLIC_GRAPH, targetTriples);
 
-    res.status(200).send(JSON.stringify({ status: "done" }));
+    res.status(200).send(JSON.stringify({ status: "remove succeeded" }));
   } catch (e) {
     if( e instanceof NoMatchingRoleError )
       res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
@@ -205,6 +205,5 @@ app.delete('/museum/:id/from-public', async function(req, res) {
       res.status(500).send(JSON.stringify({ status: "failure" }));
   }
 });
-
 
 app.use(errorHandler);
