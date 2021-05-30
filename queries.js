@@ -1,9 +1,11 @@
 import { querySudo, updateSudo } from '@lblod/mu-auth-sudo';
+import { query } from 'mu';
 import { sparqlEscapeString, sparqlEscapeUri } from 'mu';
 import { pre, post } from 'formal-code';
 
 const PREFIXES = `
   PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
+  PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
 `;
 
 /**
@@ -11,6 +13,13 @@ const PREFIXES = `
  * queries.
  */
 const MAX_TRIPLES_PER_UPDATE = 200;
+
+export class NoMatchingRoleError extends Error {
+  constructor(session, role = null) {
+    super(`Could not match role for ${session}${role ? `: ${role}` : ""}`);
+  }
+}
+
 
 export default class QueryHandler {
   /**
@@ -203,4 +212,74 @@ export default class QueryHandler {
     // TODO: verify this is correct for booleans and numbers
     return `${formatEntity(triple.s)} ${formatEntity(triple.p)} ${formatEntity(triple.o)}.`;
   }
+
+  /**
+   * Ensures the role of the current user operates in the name of the
+   * given museum.
+   *
+   * @param {string} sessionUri String version of the session id.
+   * @param {string} museumUri String version of the museum's uri.
+   * @return {Promise} A resolving promise if successful, otherwise a
+   * NoMatchingRoleError is thrown.
+   */
+  @pre((sessionUri,_museumUri) => typeof sessionUri === "string")
+  @pre((_sessionUri,museumUri) => typeof museumUri === "string")
+  @post((res) => res === true)
+  async ensureRoleIsMuseum(sessionUri, museumUri) {
+    // this is public info for the user
+    let answer =
+        (await query(`
+          ${PREFIXES}
+
+          SELECT ?role
+          WHERE {
+            ${sparqlEscapeUri(sessionUri)} ext:hasRole ?role.
+            ?role a ext:DataEntryRole;
+                  ext:actsOn ${sparqlEscapeUri(museumUri)}.
+          } LIMIT 1`))
+        .results.bindings.length > 0;
+
+    if( answer )
+      return true;
+    else
+      throw new NoMatchingRoleError(sessionUri, "ext:DataEntryRole");
+  }
+
+  /**
+   * Ensures the role of the current user operates as validator.
+   *
+   * @param {string} sessionUri String version of the session id.
+   * @return {Promise} A resolving promise if successful, otherwise a
+   * NoMatchingRoleError is thrown.
+   */
+  @pre((sessionUri) => typeof sessionUri === "string")
+  @post((res) => res === true)
+  async ensureRoleIsValidator(sessionUri) {
+    // this is public info for the user
+    let answer =
+        (await query(`
+          ${PREFIXES}
+
+          SELECT ?role
+          WHERE {
+            ${sparqlEscapeUri(sessionUri)} ext:hasRole ?role.
+            ?role a ext:ValidatorRole.
+          } LIMIT 1`))
+        .results.bindings.length > 0;
+
+    if( answer )
+      return true;
+    else
+      throw new NoMatchingRoleError(sessionUri, "ext:ValidatorRole");
+  }
+}
+
+export async function ensureRoleIsMuseum(sessionUri, museumUri) {
+  const db = new QueryHandler();
+  return await db.ensureRoleIsMuseum( sessionUri, museumUri );
+}
+
+export async function ensureRoleIsValidator(sessionUri) {
+  const db = new QueryHandler();
+  return await db.ensureRoleIsValidator(sessionUri);
 }

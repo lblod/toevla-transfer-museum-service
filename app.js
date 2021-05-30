@@ -1,6 +1,6 @@
 // see https://github.com/mu-semtech/mu-javascript-template for more info
 import { app, errorHandler } from 'mu';
-import QueryHandler from './queries';
+import QueryHandler, { ensureRoleIsMuseum, ensureRoleIsValidator, NoMatchingRoleError } from './queries';
 import { fetchTriples, triplesMinus } from './information-capturing';
 
 const PUBLIC_GRAPH = "http://mu.semte.ch/graphs/public";
@@ -48,8 +48,8 @@ async function sendMuseum(uri, sourceGraph, targetGraph) {
   const sourceTriples = await fetchTriples(sourceGraph, uri);
   const targetTriples = await fetchTriples(targetGraph, uri);
 
-  const toRemove = triplesMinus( targetTriples, sourceTriples );
-  const toAdd = triplesMinus( sourceTriples, targetTriples );
+  const toRemove = triplesMinus(targetTriples, sourceTriples);
+  const toAdd = triplesMinus(sourceTriples, targetTriples);
 
   if (toRemove.length > 0)
     await db.removeTriples(targetGraph, toRemove);
@@ -66,16 +66,20 @@ async function sendMuseum(uri, sourceGraph, targetGraph) {
  * - id: the uuid of the museum
  */
 app.post('/museum/:id/send-to-validator', async function(req, res) {
-  // TODO: check access rights
   try {
     const museumUri = await getMuseumUri(req.params.id);
+    const sessionUri = req.headers['mu-session-id'];
+    await ensureRoleIsMuseum(sessionUri, museumUri);
     const museumGraph = getMuseumGraph(req.params.id);
 
     res.status(200).send(JSON.stringify({ status: "requested" })); // send early confirmation for now
 
     await sendMuseum(museumUri, museumGraph, VALIDATOR_GRAPH);
   } catch (e) {
-    res.status(500).send(JSON.stringify({ status: "failure" }));
+    if( e instanceof NoMatchingRoleError )
+      res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
+    else
+      res.status(500).send(JSON.stringify({ status: "failure" }));
   }
 });
 
@@ -88,15 +92,19 @@ app.post('/museum/:id/send-to-validator', async function(req, res) {
  * - id: the uuid of the museum
  */
 app.post('/museum/:id/send-to-public', async function(req, res) {
-  // TODO: check access rights
   try {
+    const sessionUri = req.headers['mu-session-id'];
+    await ensureRoleIsValidator(sessionUri);
     const museumUri = await getMuseumUri(req.params.id);
 
     res.status(200).send(JSON.stringify({ status: "requested" })); // send early confirmation for now
 
     await sendMuseum(museumUri, VALIDATOR_GRAPH, PUBLIC_GRAPH);
   } catch (e) {
-    res.status(500).send(JSON.stringify({ status: "failure" }));
+    if( e instanceof NoMatchingRoleError )
+      res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
+    else
+      res.status(500).send(JSON.stringify({ status: "failure" }));
   }
 });
 
@@ -106,8 +114,9 @@ app.post('/museum/:id/send-to-public', async function(req, res) {
  * - id: the uuid of the museum
  */
 app.post('/museum/:id/send-to-museum', async function(req, res) {
-  // TODO: check access rights
   try {
+    const sessionUri = req.headers['mu-session-id'];
+    await ensureRoleIsValidator(sessionUri);
     const museumUri = await getMuseumUri(req.params.id);
     const museumGraph = getMuseumGraph(req.params.id);
 
@@ -115,7 +124,10 @@ app.post('/museum/:id/send-to-museum', async function(req, res) {
 
     await sendMuseum(museumUri, VALIDATOR_GRAPH, museumGraph);
   } catch (e) {
-    res.status(500).send(JSON.stringify({ status: "failure" }));
+    if( e instanceof NoMatchingRoleError )
+      res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
+    else
+      res.status(500).send(JSON.stringify({ status: "failure" }));
   }
 });
 
@@ -127,14 +139,18 @@ app.post('/museum/:id/send-to-museum', async function(req, res) {
  * - id: the uuid of the museum
  */
 app.post('/museum/:id/from-public', async function(req, res) {
-  // TODO: check access rights
   try {
+    const sessionUri = req.headers['mu-session-id'];
+    await ensureRoleIsValidator(sessionUri);
     const museumUri = await getMuseumUri(req.params.id);
     await sendMuseum(museumUri, PUBLIC_GRAPH, VALIDATOR_GRAPH);
 
     res.status(200).send(JSON.stringify({ status: "done" }));
   } catch (e) {
-    res.status(500).send(JSON.stringify({ status: "failure" }));
+    if( e instanceof NoMatchingRoleError )
+      res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
+    else
+      res.status(500).send(JSON.stringify({ status: "failure" }));
   }
 });
 
@@ -145,8 +161,9 @@ app.post('/museum/:id/from-public', async function(req, res) {
  */
 app.delete('/museum/:id/from-validator', async function(req, res) {
   const db = new QueryHandler();
-  // TODO: check access rights
   try {
+    const sessionUri = req.headers['mu-session-id'];
+    await ensureRoleIsValidator(sessionUri);
     const museumUri = await getMuseumUri(req.params.id);
 
     const targetTriples = await fetchTriples(VALIDATOR_GRAPH, museumUri);
@@ -156,7 +173,10 @@ app.delete('/museum/:id/from-validator', async function(req, res) {
 
     res.status(200).send(JSON.stringify({ status: "done" }));
   } catch (e) {
-    res.status(500).send(JSON.stringify({ status: "failure" }));
+    if( e instanceof NoMatchingRoleError )
+      res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
+    else
+      res.status(500).send(JSON.stringify({ status: "failure" }));
   }
 });
 
@@ -167,8 +187,9 @@ app.delete('/museum/:id/from-validator', async function(req, res) {
  */
 app.delete('/museum/:id/from-public', async function(req, res) {
   const db = new QueryHandler();
-  // TODO: check access rights
   try {
+    const sessionUri = req.headers['mu-session-id'];
+    await ensureRoleIsValidator(sessionUri);
     const museumUri = await getMuseumUri(req.params.id);
 
     const targetTriples = await fetchTriples(PUBLIC_GRAPH, museumUri);
@@ -178,7 +199,10 @@ app.delete('/museum/:id/from-public', async function(req, res) {
 
     res.status(200).send(JSON.stringify({ status: "done" }));
   } catch (e) {
-    res.status(500).send(JSON.stringify({ status: "failure" }));
+    if( e instanceof NoMatchingRoleError )
+      res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
+    else
+      res.status(500).send(JSON.stringify({ status: "failure" }));
   }
 });
 
