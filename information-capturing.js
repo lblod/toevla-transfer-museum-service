@@ -2,6 +2,8 @@ import domain from './domain';
 import QueryHandler from './queries';
 import { pre, post } from 'formal-code';
 
+const FETCH_TRIPLES_REQUEST_CONCURRENCY = 12;
+
 class TripleStore {
   /**
      * @type Map<string,string>
@@ -106,6 +108,29 @@ export default class InformationCapturing {
   }
 
   /**
+   * Splits entities in N batches.
+   *
+   * @template T
+   * @param {[T]} triples Entities to batch.
+   * @param {number} batches Amount of batches.
+   * @return {[[T]]} Nested array of batches.
+   */
+  splitTriples(triples, batches = FETCH_TRIPLES_REQUEST_CONCURRENCY) {
+    // initialize the batches
+    const result = [];
+    for (let i = 0; i < batches; i++) {
+      result[i] = [];
+    }
+
+    // fill the batches
+    triples.forEach((triple, idx) =>
+      result[idx % batches].push(triple)
+    );
+
+    return result;
+  }
+
+  /**
      * Fetches all triples originating from the provided data-source.
      *
      * @return {Promise}
@@ -126,20 +151,25 @@ export default class InformationCapturing {
           urisToFetch.add(resource);
 
       // fetch extra information for each of the URIs
-      for (const resource of [...urisToFetch]) {
-        for (const triple
-          of await db.fetchData(this.graph,
-            resource,
-            await this.allPredicates(resource))) {
+      const batches = this.splitTriples([...urisToFetch], FETCH_TRIPLES_REQUEST_CONCURRENCY);
+      const promises = batches.map( async (batch) => {
+        for (const resource of [...batch]) {
+          for (const triple
+               of await db.fetchData(this.graph,
+                                     resource,
+                                     await this.allPredicates(resource))) {
 
-          this.triples.add(triple);
-          if (!this.isKnownResource(triple.s.value))
-            this.newResources.add(triple.s.value);
-          if (triple.o.type === "uri"
-            && !this.isKnownResource(triple.o.value))
-            this.newResources.add(triple.o.value);
+            this.triples.add(triple);
+            if (!this.isKnownResource(triple.s.value))
+              this.newResources.add(triple.s.value);
+            if (triple.o.type === "uri"
+                && !this.isKnownResource(triple.o.value))
+              this.newResources.add(triple.o.value);
+          }
         }
-      }
+      });
+
+      await Promise.all( promises );
     } while (this.newResources.size !== 0)
   }
 
