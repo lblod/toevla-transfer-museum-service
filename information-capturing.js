@@ -2,7 +2,7 @@ import domain from './domain';
 import QueryHandler from './queries';
 import { pre, post } from 'formal-code';
 
-const FETCH_TRIPLES_REQUEST_CONCURRENCY = 12;
+const FETCH_TRIPLES_REQUEST_CONCURRENCY = 32;
 
 class TripleStore {
   /**

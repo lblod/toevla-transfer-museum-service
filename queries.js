@@ -12,7 +12,7 @@ const PREFIXES = `
  * How much tirples will be sent maximum for insert data or delete data
  * queries.
  */
-const MAX_TRIPLES_PER_UPDATE = 200;
+const MAX_TRIPLES_PER_UPDATE = 150;
 
 export class NoMatchingRoleError extends Error {
   constructor(session, role = null) {

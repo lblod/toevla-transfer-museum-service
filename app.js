@@ -39,8 +39,10 @@ function getMuseumGraph(uuid) {
  * @param {string} uri The uri of the museum.
  * @param {string} sourceGraph Originating graph.
  * @param {string} targetGraph Manipulated graph.
+ * @param {boolean} validateSending? If truethy, we will validate
+ *   whether all triples were correctly updated or not.
  */
-async function sendMuseum(uri, sourceGraph, targetGraph) {
+async function sendMuseum(uri, sourceGraph, targetGraph, validateSending = true) {
   const db = new QueryHandler();
 
   // FUTURE: lockMuseum( museumUri, museumUri );
@@ -55,6 +57,25 @@ async function sendMuseum(uri, sourceGraph, targetGraph) {
     await db.removeTriples(targetGraph, toRemove);
   if (toAdd.length > 0)
     await db.insertTriples(targetGraph, toAdd);
+
+  if( validateSending ) {
+    const newSourceTriples = await fetchTriples(sourceGraph, uri);
+    const newTargetTriples = await fetchTriples(targetGraph, uri);
+
+    const failedRemovals = triplesMinus(newTargetTriples, newSourceTriples);
+    const failedAdditions = triplesMinus(newSourceTriples, newTargetTriples);
+
+    const sendingComplete = failedRemovals.length == 0 && failedAdditions.length == 0;
+
+    if( sendingComplete ) {
+      console.log("Sending completed successfully, no missing triples");
+    } else {
+      console.log("Could not send successfully");
+      console.log({ toRemove, failedRemovals, toAdd, failedAdditions });
+    }
+
+    return sendingComplete;
+  }
 }
 
 /**
@@ -72,9 +93,15 @@ app.post('/museum/:id/send-to-validator', async function(req, res) {
     await ensureRoleIsMuseum(sessionUri, museumUri);
     const museumGraph = getMuseumGraph(req.params.id);
 
-    await sendMuseum(museumUri, museumGraph, VALIDATOR_GRAPH);
-
-    res.status(200).send(JSON.stringify({ status: "transfer succeeded" }));
+    if( await sendMuseum(museumUri, museumGraph, VALIDATOR_GRAPH, true) ) {
+      res
+        .status(200)
+        .send(JSON.stringify({status: "transfer succeeded"}));
+    } else {
+      res
+        .status(500)
+        .send(JSON.stringify({status: "transfer incomplete"}));
+    }
   } catch (e) {
     if( e instanceof NoMatchingRoleError )
       res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
@@ -97,7 +124,15 @@ app.post('/museum/:id/send-to-public', async function(req, res) {
     await ensureRoleIsValidator(sessionUri);
     const museumUri = await getMuseumUri(req.params.id);
 
-    await sendMuseum(museumUri, VALIDATOR_GRAPH, PUBLIC_GRAPH);
+    if( await sendMuseum(museumUri, VALIDATOR_GRAPH, PUBLIC_GRAPH, true) ) {
+      res
+        .status(200)
+        .send(JSON.stringify({status: "transfer succeeded"}));
+    } else {
+      res
+        .status(500)
+        .send(JSON.stringify({status: "transfer incomplete"}));
+    }
 
     res.status(200).send(JSON.stringify({ status: "transfer succeeded" }));
   } catch (e) {
@@ -120,7 +155,15 @@ app.post('/museum/:id/send-to-museum', async function(req, res) {
     const museumUri = await getMuseumUri(req.params.id);
     const museumGraph = getMuseumGraph(req.params.id);
 
-    await sendMuseum(museumUri, VALIDATOR_GRAPH, museumGraph);
+    if( await sendMuseum(museumUri, VALIDATOR_GRAPH, museumGraph, true) ) {
+      res
+        .status(200)
+        .send(JSON.stringify({status: "transfer succeeded"}));
+    } else {
+      res
+        .status(500)
+        .send(JSON.stringify({status: "transfer incomplete"}));
+    }
 
     res.status(200).send(JSON.stringify({ status: "transfer succeeded" }));
   } catch (e) {
@@ -143,7 +186,16 @@ app.post('/museum/:id/from-public', async function(req, res) {
     const sessionUri = req.headers['mu-session-id'];
     await ensureRoleIsValidator(sessionUri);
     const museumUri = await getMuseumUri(req.params.id);
-    await sendMuseum(museumUri, PUBLIC_GRAPH, VALIDATOR_GRAPH);
+
+    if( await sendMuseum(museumUri, PUBLIC_GRAPH, VALIDATOR_GRAPH, true) ) {
+      res
+        .status(200)
+        .send(JSON.stringify({status: "transfer succeeded"}));
+    } else {
+      res
+        .status(500)
+        .send(JSON.stringify({status: "transfer incomplete"}));
+    }
 
     res.status(200).send(JSON.stringify({ status: "transfer succeeded" }));
   } catch (e) {

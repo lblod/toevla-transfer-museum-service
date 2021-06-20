@@ -4,7 +4,7 @@
   "description": "Tooling to transfer musea between graphs",
   "main": "app.js",
   "dependencies": {
-    "@lblod/mu-auth-sudo": "^0.2.0",
+    "@lblod/mu-auth-sudo": "git+https://github.com/lblod/mu-auth-sudo.git#feature/configurable-logging",
     "formal-code": "git+https://github.com/madnificent/formal-code.git"
   },
   "devDependencies": {},
