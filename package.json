@@ -1,6 +1,6 @@
 {
   "name": "toevla-transfer-museum",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Tooling to transfer musea between graphs",
   "main": "app.js",
   "dependencies": {
