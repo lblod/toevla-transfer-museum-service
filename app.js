@@ -133,8 +133,6 @@ app.post('/museum/:id/send-to-public', async function(req, res) {
         .status(500)
         .send(JSON.stringify({status: "transfer incomplete"}));
     }
-
-    res.status(200).send(JSON.stringify({ status: "transfer succeeded" }));
   } catch (e) {
     if( e instanceof NoMatchingRoleError )
       res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
@@ -164,8 +162,6 @@ app.post('/museum/:id/send-to-museum', async function(req, res) {
         .status(500)
         .send(JSON.stringify({status: "transfer incomplete"}));
     }
-
-    res.status(200).send(JSON.stringify({ status: "transfer succeeded" }));
   } catch (e) {
     if( e instanceof NoMatchingRoleError )
       res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
@@ -196,8 +192,6 @@ app.post('/museum/:id/from-public', async function(req, res) {
         .status(500)
         .send(JSON.stringify({status: "transfer incomplete"}));
     }
-
-    res.status(200).send(JSON.stringify({ status: "transfer succeeded" }));
   } catch (e) {
     if( e instanceof NoMatchingRoleError )
       res.status(403).send(JSON.stringify({ status: "wrong access rights" }));
