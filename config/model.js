@@ -131,7 +131,7 @@ export default {
     // reca relationships
     "toevla:reservationOptions",
     "toevla:sizeOfElevator",
-    "sizeOfPlateauElevator"
+    "toevla:sizeOfPlateauElevator"
   ],
   "toevla:Shop": [
     "mu:uuid",
