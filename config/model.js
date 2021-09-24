@@ -99,6 +99,39 @@ export default {
     "toevla:smallestPointOnRouteForTarrace",
     "toevla:highestThresholdForTerrace",
     // no relationships
+    // for reca
+    "toevla:heightUnderTarraceTableForWheelchairInConsumptionSpace",
+    "toevla:hasTakeAwayService",
+    "toevla:hasHomeDelivery",
+    "toevla:onlySelfService",
+    "toevla:hasMicrowaveAvailable",
+    "toevla:hasKidPlayCorner",
+    "toevla:everythingOnGroundFloorOrWithPlateauElevator",
+    "toevla:hasWheelchairFriendlyTable",
+    "toevla:heightUnderTableForWheelchairInConsumptionSpaceInCm",
+    "toevla:onlyHasHighTables",
+    "toevla:hasTableSquareWithSupportsOnCorners",
+    "toevla:hasTableSquareWithCentralSupport",
+    "toevla:hasTableRoundWithCentralSupport",
+    "toevla:commentOnConsumptionSpace",
+    "toevla:hasCoveredTerrace",
+    "toevla:terraceAccessibleFromOutside",
+    "toevla:tarraceAccessibleThroughConsumptionSpace",
+    "toevla:noTarraceAvailable",
+    "toevla:onlyHasHighTablesOnTerrace",
+    "toevla:hasTableSquareWithSupportsOnCornersOnTerrace",
+    "toevla:hasTableSquareWithCentralSupportOnTerrace",
+    "toevla:hasTableRoundWithCentralSupportOnTerrace",
+    "toevla:heightUnderTableForWheelchairOnTerrace",
+    "toevla:hasWheelchairFriendlyTableOnTerrace",
+    "toevla:commentOnTerrace",
+    "toevla:hasConferenceRoom",
+    "toevla:hasPlayground",
+    "toevla:hasBallroom",
+    // reca relationships
+    "toevla:reservationOptions",
+    "toevla:sizeOfElevator",
+    "sizeOfPlateauElevator"
   ],
   "toevla:Shop": [
     "mu:uuid",
@@ -204,6 +237,7 @@ export default {
     "toevla:comment",
     "toevla:maxVehicleHeight",
     "toevla:descriptionOfParkingOnPublicDomain",
+    "toevla:onPublicDomain",
     // relationships
     "toevla:pathToEntrance"
   ],
