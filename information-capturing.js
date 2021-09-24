@@ -3,6 +3,7 @@ import QueryHandler from './queries';
 import { pre, post } from 'formal-code';
 
 const FETCH_TRIPLES_REQUEST_CONCURRENCY = 32;
+const FETCH_MAX_PROPERTIES_PER_REQUEST = 32;
 
 class TripleStore {
   /**
@@ -115,7 +116,7 @@ export default class InformationCapturing {
    * @param {number} batches Amount of batches.
    * @return {[[T]]} Nested array of batches.
    */
-  splitTriples(triples, batches = FETCH_TRIPLES_REQUEST_CONCURRENCY) {
+  splitBatches(triples, batches = FETCH_TRIPLES_REQUEST_CONCURRENCY) {
     // initialize the batches
     const result = [];
     for (let i = 0; i < batches; i++) {
@@ -151,13 +152,22 @@ export default class InformationCapturing {
           urisToFetch.add(resource);
 
       // fetch extra information for each of the URIs
-      const batches = this.splitTriples([...urisToFetch], FETCH_TRIPLES_REQUEST_CONCURRENCY);
-      const promises = batches.map( async (batch) => {
-        for (const resource of [...batch]) {
-          for (const triple
-               of await db.fetchData(this.graph,
-                                     resource,
-                                     await this.allPredicates(resource))) {
+      const resourcesWithPredicateBatches =
+            (await Promise.all([...urisToFetch]
+                               .map(async (resource) => {
+                                 return this.splitBatches(await this.allPredicates(resource),
+                                                          FETCH_MAX_PROPERTIES_PER_REQUEST)
+                                   .map((predicates) => { return { resource, predicates }; });
+                               })))
+            .flat();
+
+      const requestBatches = this.splitBatches(
+        resourcesWithPredicateBatches,
+        FETCH_TRIPLES_REQUEST_CONCURRENCY);
+
+      const promises = requestBatches.map( async (batch) => {
+        for (const { resource, predicates } of [...batch]) {
+          for (const triple of await db.fetchData(this.graph, resource, predicates)) {
 
             this.triples.add(triple);
             if (!this.isKnownResource(triple.s.value))
