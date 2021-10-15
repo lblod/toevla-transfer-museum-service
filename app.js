@@ -71,7 +71,11 @@ async function sendMuseum(uri, sourceGraph, targetGraph, validateSending = true)
       console.log("Sending completed successfully, no missing triples");
     } else {
       console.log("Could not send successfully");
-      console.log({ toRemove, failedRemovals, toAdd, failedAdditions });
+      console.log({
+        toRemove: JSON.stringify(toRemove),
+        failedRemovals: JSON.stringify(failedRemovals),
+        toAdd: JSON.stringify(toAdd),
+        failedAdditions: JSON.stringify(failedAdditions) });
     }
 
     return sendingComplete;
