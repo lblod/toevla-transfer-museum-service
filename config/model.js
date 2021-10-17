@@ -9,6 +9,7 @@ export default {
     "mu:uuid",
     // properties
     "rdfs:label",
+    "toevla:updatedAt",
     "toevla:comment",
     "toevla:commentOnPublicTransport",
     "toevla:commentOnEntrance",
