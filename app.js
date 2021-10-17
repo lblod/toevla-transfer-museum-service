@@ -72,10 +72,10 @@ async function sendMuseum(uri, sourceGraph, targetGraph, validateSending = true)
     } else {
       console.log("Could not send successfully");
       console.log({
-        toRemove: JSON.stringify(toRemove),
-        failedRemovals: JSON.stringify(failedRemovals),
-        toAdd: JSON.stringify(toAdd),
-        failedAdditions: JSON.stringify(failedAdditions) });
+        toRemove: toRemove.map( (x) => JSON.stringify(x) ),
+        failedRemovals: failedRemovals.map( (x) => JSON.stringify(x) ),
+        toAdd: toAdd.map( (x) => JSON.stringify(x) ),
+        failedAdditions: failedAdditions.map( (x) => JSON.stringify(x) ) });
     }
 
     return sendingComplete;
