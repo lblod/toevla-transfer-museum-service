@@ -16,7 +16,17 @@ class TripleStore {
    * @param {[object] | undefined} triples Initial set of triples.
    */
   constructor(triples = []) {
-    triples.forEach((triple) => this.add(triple));
+    triples.forEach((triple) => this.add(this.canonical(triple)));
+  }
+
+  @pre((triple) => typeof triple.o === "object")
+  @pre((triple) => typeof triple.p === "object")
+  @pre((triple) => typeof triple.o === "object")
+  @post((res) => typeof res.o === "object")
+  canonical(triple) {
+    if( triple.o.datatype === "http://www.w3.org/2001/XMLSchema#decimal" )
+      triple.o.datatype = "http://www.w3.org/2001/XMLSchema#integer";
+    return triple;
   }
 
   /**
@@ -28,8 +38,9 @@ class TripleStore {
   @pre((triple) => typeof triple.p === "object")
   @pre((triple) => typeof triple.o === "object")
   add(triple) {
+    const canonicalTriple = this.canonical(triple);
     if (!this.has(triple))
-      this.triples.set(JSON.stringify(triple), triple);
+      this.triples.set(JSON.stringify(canonicalTriple), canonicalTriple);
   }
 
   /**
@@ -37,7 +48,7 @@ class TripleStore {
     * @return {boolean}
     */
   has(triple) {
-    return this.triples.has(JSON.stringify(triple));
+    return this.triples.has(JSON.stringify(this.canonical(triple)));
   }
 
   /**
